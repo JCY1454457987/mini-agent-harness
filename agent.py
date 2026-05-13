@@ -6,7 +6,7 @@ from dispatcher import dispatch_tool_call
 from pathlib import Path
 
 
-MAX_STEPS = 5
+MAX_STEPS = 12
 TRACE_MODE = "compact"   # off / compact / full
 STEP_LOG_MODE = "compact"  # off / compact / full
 '''
@@ -54,6 +54,8 @@ def print_trace(trace):
 
             elif item["type"] == "final_answer":
                 print(f"Step {step}: final_answer")
+            elif item["type"] == "thought":
+                print(f"Step {step}: thought - {item['content']}")
 
 
 
@@ -154,6 +156,26 @@ def run_agent(user_input: str):
             }
 
         action_type = action.get("type")
+
+        if action_type == "thought":
+            thought = action.get("content", "")
+
+            trace.append({
+                "step": step + 1,
+                "type": "thought",
+                "content": thought,
+            })
+
+            print(f"\nThought: {thought}")
+
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": llm_output,
+                }
+            )
+
+            continue
 
         if action_type == "final_answer":
             final_answer = action.get("answer", "")

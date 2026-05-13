@@ -81,8 +81,17 @@ async def home(
 
 
 @app.post("/", response_class=HTMLResponse)
-async def run(request: Request, user_input: str = Form(...)):
-    result = run_agent(user_input)
+async def run(request: Request, user_input: str = Form("")):
+    user_input = user_input.strip()
+
+    if not user_input:
+        result = {
+            "ok": False,
+            "error": "Please enter a task before running the agent.",
+            "trace": [],
+        }
+    else:
+        result = run_agent(user_input)
 
     return templates.TemplateResponse(
         request=request,

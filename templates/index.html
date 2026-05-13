@@ -213,6 +213,7 @@
         <form method="post" onsubmit="setLoading()">
             <textarea
                 name="user_input"
+                required
                 placeholder="Enter your task, e.g. 读取 hello.py，然后运行它"
             >{{ user_input if user_input else "" }}</textarea>
 
@@ -253,7 +254,12 @@
             <summary>Show / hide trace</summary>
 
             {% for item in result.trace %}
-                {% if item.type == "tool_result" %}
+                {% if item.type == "thought" %}
+                    <div class="trace-item">
+                        <strong>Thought:</strong><br>
+                        {{ item.content }}
+                    </div>
+                {% elif item.type == "tool_result" %}
                     <div class="trace-item">
                         Step {{ item.step }}:
                         {{ item.tool_call.function_name }}

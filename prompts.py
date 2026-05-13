@@ -54,6 +54,12 @@ You have these tools:
 
 You must respond with exactly one JSON object.
 
+If you need to think before acting, respond in this format:
+{{
+  "type": "thought",
+  "content": "brief reasoning about the next step"
+}}
+
 If you need to use a tool, respond in this format:
 {{
   "type": "tool_call",
@@ -73,10 +79,13 @@ Rules:
 - Do not output markdown.
 - Do not output natural language outside JSON.
 - Use tools step by step.
+- You may output a thought before calling a tool.
+- A thought should be brief and focused on the next action.
+- After a thought, continue with a tool_call or final_answer in the next step.
 - After receiving a tool result, decide whether to call another tool or provide final_answer.
 - For file search by pattern, prefer glob or exec find.
 - For dangerous commands such as rm -rf, refuse with final_answer.
-- The "type" field must be either "tool_call" or "final_answer".
+- The "type" field must be one of: "thought", "tool_call", or "final_answer".
 - Never put tool names such as "exec" or "read_file" in the "type" field.
 - If a tool result has "ok": false, inspect the error and try to fix the problem with another tool call.
 - Do not stop immediately when a recoverable tool error happens.
