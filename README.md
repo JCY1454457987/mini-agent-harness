@@ -138,6 +138,47 @@ The same configuration is used to:
 
 This makes the agent extensible: adding a new tool only requires updating `tools.json` and implementing the corresponding function in `tools.py`.
 
+## Web UI
+
+The project also includes a lightweight FastAPI-based web interface.
+
+Features:
+
+- Chat-style task input
+- Execution trace visualization
+- Persistent run history
+- Dynamic tool runtime
+- Local LLM integration
+- Runtime safety controls
+
+Run the web UI:
+
+```bash
+uvicorn server:app --host 0.0.0.0 --port 7860 --reload
+```
+
+Then open:
+
+```text
+http://localhost:7860
+```
+## Architecture
+
+```text
+tools.json
+    ↓
+prompts.py
+    ↓
+schemas.py
+    ↓
+dispatcher.py
+    ↓
+tools.py
+    ↓
+agent.py
+    ↓
+Web UI / CLI
+```
 
 ## Future Work
 ```md

@@ -3,7 +3,6 @@ from datetime import datetime
 from llm import chat
 from prompts import SYSTEM_PROMPT
 from dispatcher import dispatch_tool_call
-from pathlib import Path
 
 
 MAX_STEPS = 5
@@ -95,27 +94,6 @@ def print_step_log(step, llm_output=None, tool_result=None):
             print(f"Tool: {tool} -> {status}")
 
 
-def save_run_log(user_input: str, result: dict):
-    log_dir = Path("logs")
-    log_dir.mkdir(exist_ok=True)
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    log_file = log_dir / f"run_{timestamp}.json"
-
-    data = {
-        "timestamp": timestamp,
-        "user_input": user_input,
-        "result": result,
-    }
-
-    log_file.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-
-    return str(log_file)
-
 
 def run_agent(user_input: str):
 
@@ -146,12 +124,7 @@ def run_agent(user_input: str):
         except Exception as e:
             print("\nParse Error:")
             print(e)
-
-            return {
-                "ok": False,
-                "error": f"Parse Error: {e}",
-                "trace": trace,
-            }
+            return
 
         action_type = action.get("type")
 
@@ -169,16 +142,7 @@ def run_agent(user_input: str):
 
             print_trace(trace)
 
-            result = {
-                "ok": True,
-                "answer": final_answer,
-                "trace": trace,
-            }
-
-            log_file = save_run_log(user_input, result)
-            result["log_file"] = log_file
-
-            return result
+            return
 
         if action_type in [
                                 "tool_call",
@@ -233,20 +197,11 @@ def run_agent(user_input: str):
 
         print("\nUnknown action type:")
         print(action)
-        return {
-            "ok": False,
-            "error": "Unknown action type",
-            "action": action,
-            "trace": trace,
-        }
+        return
 
     print("\nStopped: reached max steps.")
     print_trace(trace)
-    return {
-        "ok": False,
-        "error": "Reached max steps",
-        "trace": trace,
-    }
+
 
 if __name__ == "__main__":
     while True:

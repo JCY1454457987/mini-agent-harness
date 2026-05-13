@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Agent Harness</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f6f7fb;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 14px;
+            font-size: 15px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .user-box {
+            background: #eef2ff;
+            border-left: 4px solid #4f46e5;
+            padding: 14px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+
+        .answer-box {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 14px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 14px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+
+        details {
+            margin-top: 16px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .trace-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .success {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .failed {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .log-file {
+            margin-top: 12px;
+            color: #666;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-top: 30px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            height: fit-content;
+        }
+
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .log-time {
+            color: #888;
+            font-size: 12px;
+        }
+        .log-title a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .log-title a:hover {
+            color: #2563eb;
+        }
+        .loading {
+            margin-top: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>Mini Agent Harness</h1>
+        <p>Local LLM Agent Runtime with Tool Calling, Trace, and Safety Controls</p>
+    </div>
+
+    <div class="layout">
+
+        <div class="sidebar">
+            <h3>History</h3>
+
+            {% if logs %}
+                {% for log in logs %}
+                    <div class="log-item">
+                        <div class="log-title">
+                            <a href="/?log_file={{ log.file }}">
+                                {{ log.user_input }}
+                            </a>
+                        </div>
+
+                        <div class="log-time">
+                            {{ log.timestamp }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No history yet.</p>
+            {% endif %}
+        </div>
+
+        <div>
+
+    <div class="card">
+        <form method="post" onsubmit="setLoading()">
+            <textarea
+                name="user_input"
+                placeholder="Enter your task, e.g. 读取 hello.py，然后运行它"
+            >{{ user_input if user_input else "" }}</textarea>
+
+            <br>
+
+            <button id="run-btn" type="submit">Run Agent</button>
+            <div id="loading" class="loading" style="display: none;">
+                Agent is working...
+            </div>
+        </form>
+    </div>
+
+    {% if result %}
+
+    <div class="card">
+        <h2>User Input</h2>
+        <div class="user-box">{{ user_input }}</div>
+    </div>
+
+    <div class="card">
+        <h2>Final Answer</h2>
+
+        {% if result.ok %}
+            <div class="answer-box">{{ result.answer }}</div>
+        {% else %}
+            <div class="error-box">{{ result.error }}</div>
+        {% endif %}
+
+        {% if result.log_file %}
+            <div class="log-file">Log saved to: {{ result.log_file }}</div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Execution Trace</h2>
+
+        <details open>
+            <summary>Show / hide trace</summary>
+
+            {% for item in result.trace %}
+                {% if item.type == "tool_result" %}
+                    <div class="trace-item">
+                        Step {{ item.step }}:
+                        {{ item.tool_call.function_name }}
+                        →
+                        {% if item.result.ok %}
+                            <span class="success">success</span>
+                        {% else %}
+                            <span class="failed">failed</span>
+                        {% endif %}
+                    </div>
+                {% elif item.type == "final_answer" %}
+                    <div class="trace-item">
+                        Step {{ item.step }}: final_answer
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </details>
+    </div>
+
+    {% endif %}
+    </div>
+</div>
+    <div class="footer">
+        Mini Agent Harness · Dynamic Tool Registry · Multi-step Agent Loop
+    </div>
+
+
+</div>
+    <script>
+        function setLoading() {
+            const btn = document.getElementById("run-btn");
+            const loading = document.getElementById("loading");
+
+            btn.disabled = true;
+            btn.innerText = "Running...";
+            loading.style.display = "block";
+        }
+    </script>
+</body>
+</html>
