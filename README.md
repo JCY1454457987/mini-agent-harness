@@ -125,8 +125,18 @@ schemas.py
 dispatcher.py
 tools.py
 ```
-A JSON-based dynamic tool registry can be added in future versions.
 
+## Dynamic Tool Registry
+
+Tools are defined in `tools.json`.
+
+The same configuration is used to:
+
+- generate tool descriptions in the system prompt
+- build argument schemas
+- register Python tool functions dynamically
+
+This makes the agent extensible: adding a new tool only requires updating `tools.json` and implementing the corresponding function in `tools.py`.
 
 
 ## Future Work

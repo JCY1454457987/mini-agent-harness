@@ -1,21 +1,38 @@
 import json
+import importlib
+from pathlib import Path
 
-
-from tools import read_file, write_file, list_dir, exec_command, glob_files
-from schemas import validate_tool_call
 from normalizer import normalize_tool_call
+from schemas import validate_tool_call
 
 
+def load_tool_registry(config_path="tools.json") -> dict:
+    config_file = Path(config_path)
 
-TOOLS = {
-    "read_file": read_file,
-    "write_file": write_file,
-    "list_dir": list_dir,
-    "exec": exec_command,
-    "glob": glob_files,
-}
+    if not config_file.exists():
+        raise FileNotFoundError(f"Tool config file not found: {config_path}")
+
+    config = json.loads(config_file.read_text(encoding="utf-8"))
+
+    tool_registry = {}
+
+    tools_module = importlib.import_module("tools")
+
+    for tool in config.get("tools", []):
+        tool_name = tool["name"]
+        function_name = tool["function"]
+
+        if not hasattr(tools_module, function_name):
+            raise AttributeError(
+                f"Function '{function_name}' for tool '{tool_name}' not found in tools.py"
+            )
+
+        tool_registry[tool_name] = getattr(tools_module, function_name)
+
+    return tool_registry
 
 
+TOOLS = load_tool_registry()
 
 
 def parse_tool_call(text: str) -> dict:
@@ -35,10 +52,12 @@ def dispatch_tool_call(text: str):
         tool_call = normalize_tool_call(tool_call)
 
         validation = validate_tool_call(tool_call)
+
         if not validation["ok"]:
             return validation
 
         tool_call = validation["tool_call"]
+
         tool_name = tool_call["name"]
         arguments = tool_call["arguments"]
 

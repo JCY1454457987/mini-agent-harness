@@ -1,0 +1,76 @@
+{
+    "tools": [
+      {
+        "name": "read_file",
+        "description": "Read a text file from the local workspace.",
+        "function": "read_file",
+        "arguments": {
+          "path": {
+            "type": "str",
+            "required": true,
+            "description": "Path to the file."
+          }
+        }
+      },
+      {
+        "name": "write_file",
+        "description": "Write text content to a local file.",
+        "function": "write_file",
+        "arguments": {
+          "path": {
+            "type": "str",
+            "required": true,
+            "description": "Path to the file."
+          },
+          "content": {
+            "type": "str",
+            "required": true,
+            "description": "Text content to write."
+          }
+        }
+      },
+      {
+        "name": "list_dir",
+        "description": "List files in a directory.",
+        "function": "list_dir",
+        "arguments": {
+          "path": {
+            "type": "str",
+            "required": false,
+            "default": ".",
+            "description": "Directory path."
+          }
+        }
+      },
+      {
+        "name": "glob",
+        "description": "Find files by glob pattern.",
+        "function": "glob_files",
+        "arguments": {
+          "pattern": {
+            "type": "str",
+            "required": true,
+            "description": "Glob pattern, such as *.py or *agent*."
+          },
+          "path": {
+            "type": "str",
+            "required": false,
+            "default": ".",
+            "description": "Base directory."
+          }
+        }
+      },
+      {
+        "name": "exec",
+        "description": "Execute a shell command with runtime safety checks.",
+        "function": "exec_command",
+        "arguments": {
+          "command": {
+            "type": "str",
+            "required": true,
+            "description": "Shell command to execute."
+          }
+        }
+      }
+    ]
+  }

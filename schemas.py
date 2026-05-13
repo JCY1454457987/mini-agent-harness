@@ -1,53 +1,64 @@
 # schemas.py
 
-TOOL_SCHEMAS = {
-    "list_dir": {
-        "required": {},
-        "optional": {
-            "path": str,
-        },
-        "defaults": {
-            "path": ".",
-        },
-    },
+import json
+from pathlib import Path
 
-    "read_file": {
-        "required": {
-            "path": str,
-        },
-        "optional": {},
-        "defaults": {},
-    },
 
-    "write_file": {
-        "required": {
-            "path": str,
-            "content": str,
-        },
-        "optional": {},
-        "defaults": {},
-    },
-
-    "exec": {
-        "required": {
-            "command": str,
-        },
-        "optional": {},
-        "defaults": {},
-    },
-
-    "glob": {
-        "required": {
-            "pattern": str,
-        },
-        "optional": {
-            "path": str,
-        },
-        "defaults": {
-            "path": ".",
-        },
-    },
+TYPE_MAP = {
+    "str": str,
+    "int": int,
+    "float": float,
+    "bool": bool,
 }
+
+
+def load_tool_schemas(config_path="tools.json") -> dict:
+    config_file = Path(config_path)
+
+    if not config_file.exists():
+        raise FileNotFoundError(f"Tool config file not found: {config_path}")
+
+    config = json.loads(config_file.read_text(encoding="utf-8"))
+
+    tool_schemas = {}
+
+    for tool in config.get("tools", []):
+        tool_name = tool["name"]
+        arguments = tool.get("arguments", {})
+
+        required = {}
+        optional = {}
+        defaults = {}
+
+        for arg_name, arg_info in arguments.items():
+            type_name = arg_info.get("type", "str")
+            expected_type = TYPE_MAP.get(type_name)
+
+            if expected_type is None:
+                raise ValueError(
+                    f"Unsupported type '{type_name}' in tool '{tool_name}', argument '{arg_name}'"
+                )
+
+            is_required = arg_info.get("required", False)
+
+            if is_required:
+                required[arg_name] = expected_type
+            else:
+                optional[arg_name] = expected_type
+
+                if "default" in arg_info:
+                    defaults[arg_name] = arg_info["default"]
+
+        tool_schemas[tool_name] = {
+            "required": required,
+            "optional": optional,
+            "defaults": defaults,
+        }
+
+    return tool_schemas
+
+
+TOOL_SCHEMAS = load_tool_schemas()
 
 
 def validate_tool_call(tool_call: dict) -> dict:
@@ -75,7 +86,6 @@ def validate_tool_call(tool_call: dict) -> dict:
 
     final_args = dict(defaults)
 
-    # 检查必需参数
     for key, expected_type in required.items():
         if key not in arguments:
             return {
@@ -93,7 +103,6 @@ def validate_tool_call(tool_call: dict) -> dict:
 
         final_args[key] = arguments[key]
 
-    # 检查可选参数 + 多余参数
     allowed_keys = set(required.keys()) | set(optional.keys())
 
     for key, value in arguments.items():
@@ -107,6 +116,7 @@ def validate_tool_call(tool_call: dict) -> dict:
 
         if key in optional:
             expected_type = optional[key]
+
             if not isinstance(value, expected_type):
                 return {
                     "ok": False,
