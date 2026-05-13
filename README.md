@@ -60,6 +60,10 @@ mini_agent/
 - Dangerous command blocking
 - Compact/full execution tracing
 
+## Demo
+
+![demo](./assets/demo.gif)
+
 ## Example
 
 User:
