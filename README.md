@@ -118,3 +118,97 @@ Features:
 - Execution logs
 - Local LLM integration
 - Runtime safety controls
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/JCY1454457987/mini-agent-harness.git
+cd mini-agent-harness
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Local LLM Setup
+
+This project uses an OpenAI-compatible local LLM endpoint.
+
+By default, `llm.py` sends requests to:
+
+```text
+http://localhost:8000/v1/chat/completions
+```
+
+You can start a local server with:
+
+* vLLM
+* FastAPI
+* OpenAI-compatible backends
+
+Example using vLLM:
+
+```bash
+vllm serve Qwen/Qwen2.5-Coder-14B-Instruct \
+  --host 0.0.0.0 \
+  --port 8000
+```
+
+---
+
+## Run CLI Agent
+
+Start the CLI runtime:
+
+```bash
+python agent.py
+```
+
+Example:
+
+```text
+读取 hello.py，然后运行它
+```
+
+---
+
+## Run Web UI
+
+Start the FastAPI web interface:
+
+```bash
+uvicorn server:app --host 0.0.0.0 --port 7860 --reload
+```
+
+Then open:
+
+```text
+http://localhost:7860
+```
+
+---
+
+## Project Structure
+
+```text
+mini_agent/
+│
+├── agent.py
+├── dispatcher.py
+├── normalizer.py
+├── schemas.py
+├── tools.py
+├── tools.json
+├── llm.py
+├── prompts.py
+├── server.py
+├── templates/
+├── logs/
+└── README.md
+```
