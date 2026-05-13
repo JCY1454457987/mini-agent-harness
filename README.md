@@ -36,7 +36,7 @@ Agent Loop
 ```
 
 ## Project Structure
-
+```text
 mini_agent/
 │
 ├── agent.py          # multi-step agent loop
@@ -47,6 +47,7 @@ mini_agent/
 ├── llm.py            # local LLM API wrapper
 ├── prompts.py        # system prompts
 └── README.md
+```
 
 ## Features
 
@@ -123,9 +124,9 @@ tools.py
 A JSON-based dynamic tool registry can be added in future versions.
 
 
-```md
-## Future Work
 
+## Future Work
+```md
 - Scratchpad reasoning
 - Planner/executor architecture
 - Parallel tool execution
